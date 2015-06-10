@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test</title>
+  <script type="text/javascript">
+    var socket = new WebSocket("ws://localhost:4445")
+
+    var logCallback = function(name) {
+      return function() {
+        console.log({name: name, arguments: arguments})
+      }
+    }
+
+    socket.onopen     = function() {
+      console.log(["onopen", arguments])
+      socket.send("Client reporting for duty")
+    }
+    socket.onclose    = logCallback("onclose")
+    socket.onmessage  = logCallback("onmessage")
+
+  </script>
+</head>
+<body>
+
+</body>
+</html>
