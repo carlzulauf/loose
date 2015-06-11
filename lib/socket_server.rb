@@ -16,39 +16,35 @@ class SocketServer
   def run
     EM.run do
       EM::WebSocket.run(websocket_options) do |ws|
-        clients << Client.new(self, ws).register
+        Client.new(self, ws).register
       end
     end
     self
   end
 
   def self.run(options = {})
-    @@current = self.new(options)
-    current.run
-  end
-
-  def self.current
-    @@current
+    self.new(options).run
   end
 
   class Client
+
     def initialize(server, socket)
       @server = server
       @socket = socket
     end
 
     def register
-      @socket.onopen    &log_callback(:onopen)
-      @socket.onclose   &log_callback(:onclose)
-      @socket.onmessage &log_callback(:onmessage)
+      @socket.onopen { @server.clients << self }
+      @socket.onclose { @server.clients.delete(self) }
+      @socket.onmessage do |message|
+        @server.clients.each { |c| c.send_message(message) }
+      end
+      self
     end
 
-    def log_callback(event)
-      lambda do |*args|
-        puts
-        pp event: event, args: args
-        puts
-      end
+    def send_message(message)
+      @socket.send message
     end
+
   end
 end
