@@ -6,6 +6,44 @@
   <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
   <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
   <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script type="text/javascript">
+
+    // create WebSocket connection
+    var socket = new WebSocket("ws://" + location.hostname + ":4445")
+
+    $(function() {
+
+      var $form = $("form.chat-input"),
+          $messages = $(".chat-messages dl")
+
+      // triggered when user presses send or enter
+      $form.submit(function(e) {
+        e.preventDefault()
+
+        var nick = $form.find(".nick").val() || "(anon)",
+            $message = $form.find(".message")
+
+        // send message to server, which broadcasts it to everyone
+        socket.send(JSON.stringify({nick: nick, message: $message.val()}))
+
+        $message.val("")
+      })
+
+      // triggered when a message comes in from the server
+      socket.onmessage = function(event) {
+        var data = JSON.parse(event.data),
+            $nick = $(document.createElement("dt")),
+            $message = $(document.createElement("dd"))
+
+        $nick.text(data.nick)
+        $message.text(data.message)
+        $messages.append($nick)
+        $messages.append($message)
+        window.scroll(0, $(document).height())
+      }
+    })
+
+  </script>
 </head>
 <body>
 
