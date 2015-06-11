@@ -19,7 +19,7 @@
       $form.submit(function(e) {
         e.preventDefault()
 
-        var nick = $form.find(".nick").val(),
+        var nick = $form.find(".nick").val() || "(anon)",
             $message = $form.find(".message")
 
         // send message to server, which broadcasts it to everyone
