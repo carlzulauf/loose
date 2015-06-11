@@ -14,7 +14,9 @@ class SocketServer
   end
 
   def run
+    # start EventMachine event loop
     EM.run do
+      # start web socket server that emits web socket clients to proc
       EM::WebSocket.run(websocket_options) do |ws|
         Client.new(self, ws).register
       end
@@ -36,6 +38,8 @@ class SocketServer
     def register
       @socket.onopen { @server.clients << self }
       @socket.onclose { @server.clients.delete(self) }
+
+      # take every incoming message and broadcast to all clients
       @socket.onmessage do |message|
         @server.clients.each { |c| c.send_message(message) }
       end
