@@ -1,26 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Test</title>
+  <title>#loose</title>
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
   <script type="text/javascript">
     var socket = new WebSocket("ws://localhost:4445")
 
-    var logCallback = function(name) {
-      return function() {
-        console.log({name: name, arguments: arguments})
-      }
-    }
+    $(function() {
 
-    socket.onopen     = function() {
-      console.log(["onopen", arguments])
-      socket.send("Client reporting for duty")
-    }
-    socket.onclose    = logCallback("onclose")
-    socket.onmessage  = logCallback("onmessage")
+      var $form = $("form.chat-input"),
+          $messages = $(".chat-messages dl")
+
+      $form.submit(function(e) {
+        e.preventDefault()
+
+        var nick = $form.find(".nick").val(),
+            $message = $form.find(".message")
+
+        socket.send(JSON.stringify({nick: nick, message: $message.val()}))
+        $message.val("")
+      })
+
+      socket.onmessage = function(event) {
+        var data = JSON.parse(event.data),
+            $nick = $(document.createElement("dt")),
+            $message = $(document.createElement("dd"))
+
+        $nick.text(data.nick)
+        $message.text(data.message)
+        $messages.append($nick)
+        $messages.append($message)
+      }
+    })
 
   </script>
 </head>
 <body>
+
+  <div class="container-fluid navbar-fixed-bottom">
+    <form class="form-group chat-input">
+      <div class="row">
+        <div class="col-xs-2">
+          <input type="text" class="form-control nick" placeholder="Nick">
+        </div>
+        <div class="col-xs-10">
+          <div class="input-group">
+            <input type="text" class="form-control message" placeholder="Chat...">
+            <span class="input-group-btn">
+              <!-- <button class="btn btn-default" type="button">Send</button> -->
+              <input type="submit" class="btn btn-default" value="Send">
+            </span>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-xs-12">
+        <h1>#loose</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12 chat-messages">
+        <dl class="dl-horizontal">
+        </dl>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
